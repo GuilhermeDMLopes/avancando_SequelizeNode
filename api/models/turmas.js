@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Turmas = sequelize.define('Turmas', {
     data_inicio: DataTypes.DATEONLY
-  }, {});
+  }, { paranoid: true }); // paranoid: true é a função para o soft delete
   Turmas.associate = function(models) {
     Turmas.hasMany(models.Matriculas, {
       foreignKey: 'turma_id'

@@ -107,6 +107,37 @@ class PessoaController {
             return res.status(500).json(error.message)
         }
     }
+
+    //Metedo para recuperar um registro
+    static async restauraPessoa(req, res) {
+        //Pegamos o ID da pessoa que queremos recuperar
+        const { id } = req.params
+        try {
+            //Utilizamos o metodo restore do sequelize para recuperar o registro do id passado por parametro
+            await database.Pessoas.restore( {where: { id: Number(id)}})
+            return res.status(200).json( { mensagem: `A pessoa de id ${id} foi restaurada`})
+        } catch(error) {
+            return res.status(500).json(error.message)
+        }
+    }
+
+    //Restaura Matricula
+    static async restauraMatricula(req, res) {
+        //Recebe o Id da pessoa e a matricula da pessoa como parametro
+        const { estudanteId, matriculaId } = req.params
+        try {
+          //Faz a mesma função de restaura pessoa porém com mais um parametro, o id da pessoa  
+          await database.Matriculas.restore({
+            where: {
+              id: Number(matriculaId),
+              estudante_id: Number(estudanteId)
+            }
+          })
+          return res.status(200).json({ mensagem: `id ${id} restaurado`})
+        } catch (error) {
+          return res.status(500).json(error.message)
+        }
+      }
 }
 
 module.exports = PessoaController;
