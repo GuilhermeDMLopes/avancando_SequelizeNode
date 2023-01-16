@@ -1,4 +1,3 @@
-// controllers/TurmaController.js
 const database = require('../models')
 
 class TurmaController {
@@ -58,12 +57,9 @@ class TurmaController {
     }
   }
 
-  //Restaura turma
   static async restauraTurma(req, res) {
-    //Recebe o id da turma como parametro
     const { id } = req.params
     try {
-      //Restaura com base no id da turma que foi deletado
       await database.Turmas.restore( {where: { id: Number(id) } } )
       return res.status(200).json({ mensagem: `id ${id} restaurado`})
     } catch (error) {

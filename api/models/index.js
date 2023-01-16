@@ -21,9 +21,6 @@ fs
     return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
   })
   .forEach(file => {
-    //Linha que precisa ser trocada com a atualização do sequelize
-    //const model = sequelize['import'](path.join(__dirname, file));
-    //Linha correta inserida abaixo
     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   });

@@ -1,4 +1,3 @@
-//controllers/NivelController.js
 const database = require('../models')
 
 class NivelController {
@@ -58,12 +57,9 @@ class NivelController {
     }
   }
 
-  //Restaura nivel
   static async restauraNivel(req, res) {
-    //Recebe o id do nivel como parametro
     const { id } = req.params
     try {
-      //Restaura com base no id do nivel que foi deletado
       await database.Niveis.restore( {where: { id: Number(id) } } )
       return res.status(200).json({ mensagem: `id ${id} restaurado`})
     } catch (error) {
