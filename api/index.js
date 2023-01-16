@@ -27,5 +27,20 @@ O Scopo é declarado nos modelos
 
 É possível ter diversos escopos
 
+Fazemos as modificações no controlador e nas rotas para utilizarmos os demais escopos
+
+
+Agora faremos a validação para o item 3 do arquivo requisitos.js
+Faremos essas validações direto no modelo.
+Podemos fazer no banco com o comando: 
+Qualquer valor diferente desses, não será válido
+
+CHECK (status in ('confirmado', 'cancelado'))
+
+Através do sequelize fazemos com Validations and Constraints
+Na documentação de validations do sequelize, temos varias validações prontas como email, se cartao de credito é valido, etc.
+
+
+
 
 */

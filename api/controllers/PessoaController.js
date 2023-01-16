@@ -3,8 +3,20 @@ const database = require('../models')
 class PessoaController {
     static async pegaTodasAsPessoas(req, res) {
         try {
-            const todasAsPessoas = await database.Pessoas.findAll()
+            //adicionando scopo chamado 'todos' da classe modelo Pessoas.js para trazer todos os usuarios
+            const todasAsPessoas = await database.Pessoas.scope('todos').findAll()
             return res.status(200).json(todasAsPessoas)
+        } catch(error) {
+            return res.status(500).json(error.message)
+        }
+    }
+    
+    //Adicionando metodo para scopo de pessoas ativas
+    static async pegaPessoasAtivas(req, res) {
+        try {
+            //devido ao scopo padrão, o findAll vai usar o defaultScope que traz apenas pessoas ativas
+            const pessoasAtivas = await database.Pessoas.findAll()
+            return res.status(200).json(pessoasAtivas)
         } catch(error) {
             return res.status(500).json(error.message)
         }

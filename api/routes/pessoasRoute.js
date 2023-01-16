@@ -3,7 +3,10 @@ const PessoaController = require('../controllers/PessoaController')
 
 const router = Router()
 
-router.get('/pessoas', PessoaController.pegaTodasAsPessoas)
+//Adicionando 'todos' na rota apenas para diferenciar do de baixo, mas é opcional.
+router.get('/pessoas/todos', PessoaController.pegaTodasAsPessoas)
+//Adicionando rota para utilizar scopo padrão
+router.get('/pessoas', PessoaController.pegaPessoasAtivas)
 router.get('/pessoas/:id', PessoaController.pegaUmaPessoa)
 router.post('/pessoas', PessoaController.criaPessoa)
 router.put('/pessoas/:id', PessoaController.atualizaPessoa)
