@@ -11,3 +11,5 @@
 - softDelete: Arquivos contendo dados para realizar um soft delete. Ou seja, ocultando um dado quando ele for excluido, podendo ser restaurado.
 
 - escopoModelo_validacoes: Arquivos contendo informações sobre definições de escopo e validações dos dados usando sequelize.
+
+- escopoAssociacoes_operadores: Arquivos contendo informações sobre escopo por Associações e a utilização de operadores para filtrar buscas.
