@@ -17,3 +17,5 @@
 - transacoes: Arquivos contendo informações sobre alterações em mais de uma tabela e o uso de transactions para garantir a integridade dessas operações. Finalizando assim os items do arquivo requisitos.md
 
 - refatorandoComServicos: Refatorando o codigo implementado a camada de serviços do MVC para projetos mais complexos.
+
+- projetoCompleto: Projeto finalizado e sem comentários ou descrições.
