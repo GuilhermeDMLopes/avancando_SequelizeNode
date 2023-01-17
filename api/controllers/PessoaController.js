@@ -1,10 +1,20 @@
-const database = require('../models')
-const Sequelize = require ('sequelize')
+//const database = require('../models')
+//const Sequelize = require ('sequelize')
+
+//Fazendo importação do que está vindo de serviços
+//const Services = require('../services/Services.js')
+//Criando uma nova instância de services
+//Passando como parametro o nome do modelo que iremo usar
+//const pessoasServices = new Services('Pessoas')
+//Depois de criar os serviços de cada Modelo e o arquivo index.js, faremos:
+const { PessoasServices } = require('../services')
+const pessoasServices = new PessoasServices()
 
 class PessoaController {
     static async pegaTodasAsPessoas(req, res) {
         try {
-            const todasAsPessoas = await database.Pessoas.scope('todos').findAll()
+            //Alterando para usar serviços para encontrar todos os registros
+            const todasAsPessoas = await pessoasServices.pegaTodosOsRegistros()
             return res.status(200).json(todasAsPessoas)
         } catch(error) {
             return res.status(500).json(error.message)
@@ -13,7 +23,8 @@ class PessoaController {
     
     static async pegaPessoasAtivas(req, res) {
         try {
-            const pessoasAtivas = await database.Pessoas.findAll()
+            //Alterando para usar serviços para encontrar os registros ativos
+            const pessoasAtivas = await pessoasServices.pegaRegistroAtivos()
             return res.status(200).json(pessoasAtivas)
         } catch(error) {
             return res.status(500).json(error.message)
@@ -189,47 +200,28 @@ class PessoaController {
         }
     }
 
-    /*
-    //Cancelar matricula do estudante quando ele for desativado sem usar transaction
-    static async cancelaPessoa(req, res){
-        //Pega o id da pessoa na requisição
-        //A partir do cancelamento de estudante que vamos cancelar a matricula
+    //Vamos realizar a transição deste método para serviços
+    //ELe engloba casos de transações e updates entre tabelas
+    /*static async cancelaPessoa(req, res){
         const { estudanteId } = req.params;
         try { 
-            //Acessar tabelas e fazer updates nelas em um metodo só
-            //Na tabela Pessoas
-            //Como o update sera apenas no atributo ativo de true para false do estudante passado por parametro, colocaremos direto no where
-            await database.Pessoas.update( {ativo: false}, { where: { id: Number(estudanteId)}})            
-            //Na tabela Matriculas
-            //Mesma logica do update anterior, alterando o status para cancelado. Alterando estudante_id que é a coluna de matriculas que se relaciona com Pessoas
-            await database.Matriculas.update({ status: 'cancelado'}, { where: { estudante_id: Number(estudanteId)}})
-            //Como os updates retornam apenas 0 ou 1, enviaremos uma mensagem
-            return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})
+            database.sequelize.transaction(async transacao => {
+                await database.Pessoas.update( {ativo: false}, { where: { id: Number(estudanteId)}}, { transaction: transacao})            
+                await database.Matriculas.update({ status: 'cancelado'}, { where: { estudante_id: Number(estudanteId)}}, { transaction: transacao})
+                return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})
+            })            
         } catch(error) {
             return res.status(500).json(error.message)
         }
     }*/
 
-    //Cancelar matricula do estudante quando ele for desativado usando transaction
+    //Rescrevendo o método usando services
     static async cancelaPessoa(req, res){
-        //Pega o id da pessoa na requisição
-        //A partir do cancelamento de estudante que vamos cancelar a matricula
         const { estudanteId } = req.params;
         try { 
-            //Chamar o metodo transaction()
-            //A transaction serve como garantia de que caso o processo de alguma falha, ele retorne ao estado anterior sem comprometer o banco
-            database.sequelize.transaction(async transacao => {
-                //Acessar tabelas e fazer updates nelas em um metodo só
-                //Na tabela Pessoas
-                //Como o update sera apenas no atributo ativo de true para false do estudante passado por parametro, colocaremos direto no where e o nome da transaction
-                await database.Pessoas.update( {ativo: false}, { where: { id: Number(estudanteId)}}, { transaction: transacao})            
-                //Na tabela Matriculas
-                //Mesma logica do update anterior, alterando o status para cancelado. Alterando estudante_id que é a coluna de matriculas que se relaciona com Pessoas
-                //Se forçarmos um erro, trocando estudante_id por 'x' dentro do where. Sera gerado um erro para visualizarmos o que ocorre ambaixo dos panos
-                await database.Matriculas.update({ status: 'cancelado'}, { where: { estudante_id: Number(estudanteId)}}, { transaction: transacao})
-                //Como os updates retornam apenas 0 ou 1, enviaremos uma mensagem
-                return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})
-            })            
+            //Chamando o metodo de pessoasServices passando estudanteId convertido em numero como parametro
+            await pessoasServices.cancelaPessoaEMatriculas(Number(estudanteId))
+            return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})                        
         } catch(error) {
             return res.status(500).json(error.message)
         }
