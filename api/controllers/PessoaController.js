@@ -1,5 +1,4 @@
 const database = require('../models')
-//IMportar metodo do sequelize para escrever query SQL
 const Sequelize = require ('sequelize')
 
 class PessoaController {
@@ -144,15 +143,10 @@ class PessoaController {
         }
     }
 
-    //consultar todas as matrículas confirmadas referentes a estudante X de forma rápida.
     static async pegaMatriculas(req, res){
-        //Pegaremos o id do estudante e a matricula como parametro
         const { estudanteId } = req.params
         try {
-            //Busca um estudante de uma matricula em específico
             const pessoa = await database.Pessoas.findOne({ where: {id: Number(estudanteId)}})
-            //Pegar as matriculas confirmadas do estudante usando mixin
-            //Aulas matriculadas é o nome que demos ao escopo de associação que criou automaticamente esse mixin/essa função getAulasMatriculadas()
             const matriculas = await pessoa.getAulasMatriculadas()
 
             return res.status(200).json(matriculas)
@@ -161,53 +155,81 @@ class PessoaController {
         }
     }
 
-    //Pega Matriculas por turma
     static async pegaMatriculasPorTurma(req, res){
-        //Recebe o id da turma para checar quantas matriculas eu tenho por id de turma
         const { turmaId } = req.params
         try {
-            //Encontra e conta todas as matriculas de uma turma que tem o status confirmado
             const todasAsMatriculas = await database.Matriculas.findAndCountAll( { 
                 where: {
-                    //Verifica se o id da turma existe
                     turma_id: Number(turmaId),
-                    //Verifica se o status da matricula é 'confirmado'
                     status: 'confirmado'
                 },
-                //Podemos adicionar algumas coisas adicionais em findAndCountAll
-                //Limitamos a quantidade de dados exibidos por vez, no caso, 1 por vez
                 limit: 1,
-                //Ordenar os resultados atraves da coluna estudante_id e se sera ASC (ascendente) ou DESC (descendente)
                 order: [['estudante_id', 'ASC']]
             })
-            //Se eu fizer todasAsMatriculas.count, irá retornar apenas a quantidade de matriculas confirmadas.
             return res.status(200).json(todasAsMatriculas)
         } catch(error) {
             return res.status(500).json(error.message)
         }
     }
 
-    //Verifica se a turma está lotada
     static async pegaTurmasLotadas(req, res){
-        //Quantidade de registros que faz com que uma turma esteja lotada
         const lotacaoTurma = 2;
         try { 
-            //Contar or registros da turma e ver se está lotadas
             const turmasLotadas = await database.Matriculas.findAndCountAll( {
                 where: {
-                    //retorna apenas as matriculas de status confirmado
                     status: 'confirmado'
                 },
-                //passando turma id como atributos para um grupo
-                //Irá mostrar apenas a turma id e a contagem de cada turma
                 attributes: ['turma_id'],
-                //Irá agrupar por turma_id
                 group: ['turma_id'],
-                //Agora precisaremos escrever codigo SQL para contar a quantidade de matriculados na turma e checar se ela está lotada
-                //Se for maior que 2, ela estará lotada e será retornada 
                 having: Sequelize.literal(`count(turma_id) >= ${lotacaoTurma}`) 
             })
             return res.status(200).json(turmasLotadas)
+        } catch(error) {
+            return res.status(500).json(error.message)
+        }
+    }
+
+    /*
+    //Cancelar matricula do estudante quando ele for desativado sem usar transaction
+    static async cancelaPessoa(req, res){
+        //Pega o id da pessoa na requisição
+        //A partir do cancelamento de estudante que vamos cancelar a matricula
+        const { estudanteId } = req.params;
+        try { 
+            //Acessar tabelas e fazer updates nelas em um metodo só
+            //Na tabela Pessoas
+            //Como o update sera apenas no atributo ativo de true para false do estudante passado por parametro, colocaremos direto no where
+            await database.Pessoas.update( {ativo: false}, { where: { id: Number(estudanteId)}})            
+            //Na tabela Matriculas
+            //Mesma logica do update anterior, alterando o status para cancelado. Alterando estudante_id que é a coluna de matriculas que se relaciona com Pessoas
+            await database.Matriculas.update({ status: 'cancelado'}, { where: { estudante_id: Number(estudanteId)}})
+            //Como os updates retornam apenas 0 ou 1, enviaremos uma mensagem
+            return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})
+        } catch(error) {
+            return res.status(500).json(error.message)
+        }
+    }*/
+
+    //Cancelar matricula do estudante quando ele for desativado usando transaction
+    static async cancelaPessoa(req, res){
+        //Pega o id da pessoa na requisição
+        //A partir do cancelamento de estudante que vamos cancelar a matricula
+        const { estudanteId } = req.params;
+        try { 
+            //Chamar o metodo transaction()
+            //A transaction serve como garantia de que caso o processo de alguma falha, ele retorne ao estado anterior sem comprometer o banco
+            database.sequelize.transaction(async transacao => {
+                //Acessar tabelas e fazer updates nelas em um metodo só
+                //Na tabela Pessoas
+                //Como o update sera apenas no atributo ativo de true para false do estudante passado por parametro, colocaremos direto no where e o nome da transaction
+                await database.Pessoas.update( {ativo: false}, { where: { id: Number(estudanteId)}}, { transaction: transacao})            
+                //Na tabela Matriculas
+                //Mesma logica do update anterior, alterando o status para cancelado. Alterando estudante_id que é a coluna de matriculas que se relaciona com Pessoas
+                //Se forçarmos um erro, trocando estudante_id por 'x' dentro do where. Sera gerado um erro para visualizarmos o que ocorre ambaixo dos panos
+                await database.Matriculas.update({ status: 'cancelado'}, { where: { estudante_id: Number(estudanteId)}}, { transaction: transacao})
+                //Como os updates retornam apenas 0 ou 1, enviaremos uma mensagem
+                return res.status(200).json({ message: `matriculas referente a estudante ${estudanteId} canceladas`})
+            })            
         } catch(error) {
             return res.status(500).json(error.message)
         }

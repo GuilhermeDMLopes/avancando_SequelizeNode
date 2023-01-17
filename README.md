@@ -13,3 +13,5 @@
 - escopoModelo_validacoes: Arquivos contendo informações sobre definições de escopo e validações dos dados usando sequelize.
 
 - escopoAssociacoes_operadores: Arquivos contendo informações sobre escopo por Associações e a utilização de operadores para filtrar buscas.
+
+- transacoes: Arquivos contendo informações sobre alterações em mais de uma tabela e o uso de transactions para garantir a integridade dessas operações. Finalizando assim os items do arquivo requisitos.md

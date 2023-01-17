@@ -15,10 +15,10 @@ router.put('/pessoas/:estudanteId/matricula/:matriculaId', PessoaController.atua
 router.delete('/pessoas/:estudanteId/matricula/:matriculaId', PessoaController.deletaMatricula)
 router.post('/pessoas/:id/restaura', PessoaController.restauraPessoa)
 router.post('/pessoas/:estudanteId/matricula/:matriculaId/restaura', PessoaController.restauraMatricula)
-//Pega as matriculas confirmadas de um estudante
 router.get('/pessoas/matricula/lotada', PessoaController.pegaTurmasLotadas)
-//Pega as matriculas com status 'confirmado' de uma turma e a quantidade
 router.get('/pessoas/matricula/:turmaId/confirmadas', PessoaController.pegaMatriculasPorTurma)
+//Adicionando rota para atualizar status da matricula de um estudante que foi desativado
+router.post('/pessoas/:estudanteId/cancela', PessoaController.cancelaPessoa)
 
 
 module.exports = router

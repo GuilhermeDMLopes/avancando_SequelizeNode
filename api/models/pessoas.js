@@ -35,12 +35,9 @@ module.exports = (sequelize, DataTypes) => {
     }) 
     Pessoas.hasMany(models.Matriculas, {
       foreignKey: 'estudante_id',
-      //Adicionando scopo de associação
       scope: { 
-        //Pega as matriculas de status confirmado
         status: 'confirmado',        
       },
-      //Da o nome para o scopo que chamara os métodos do sequelize, chamados de mixins
       as: 'aulasMatriculadas'
     })
   };
